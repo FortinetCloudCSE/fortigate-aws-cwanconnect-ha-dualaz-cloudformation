@@ -4,7 +4,7 @@ menuTitle: "Introduction"
 weight: 10
 ---
 
-![Example Diagram](fgcp-cwan-tc1.png)
+![Example Diagram](../fgcp-cwan-tc1.png)
 
 ## Welcome
 

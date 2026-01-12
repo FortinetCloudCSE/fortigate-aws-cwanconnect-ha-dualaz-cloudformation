@@ -1,9 +1,7 @@
 ---
-title: "fortigate-aws-vpc-routeserver-ha-dual-az-cloudformation"
+title: "fortigate-aws-cwanconnect-ha-dualaz-cloudformation"
 weight: 1
 archetype: home
 ---
 
-![Example Diagram](fgcp-daz1.png)
-
-![Example Diagram](fgcp-daz2.png)
+![Example Diagram](fgcp-cwan-tc1.png)
