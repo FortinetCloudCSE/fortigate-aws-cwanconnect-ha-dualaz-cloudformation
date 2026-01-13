@@ -1,6 +1,6 @@
 {
 	"AWSTemplateFormatVersion": "2010-09-09",
-	"Description": "(v15.5) AWS CFT to deploy a dual AZ A-P solution integrated with Cloud WAN Tunnel-less Connect, repo: https://github.com/FortinetCloudCSE/fortigate-aws-cwanconnect-ha-dualaz-cloudformation",
+	"Description": "(v15.6) AWS CFT to deploy a dual AZ A-P solution integrated with Cloud WAN Tunnel-less Connect, repo: https://github.com/FortinetCloudCSE/fortigate-aws-cwanconnect-ha-dualaz-cloudformation",
 	"Metadata": {
 		"AWS::CloudFormation::Interface": {
 			"ParameterGroups": [
@@ -2762,6 +2762,7 @@
 								"set status enable",
 								"set type aws",
 								"set use-metadata-iam enable",
+								"set alt-resource-ip enable",
 								"next",
 								"end",
 								"config system ha",
