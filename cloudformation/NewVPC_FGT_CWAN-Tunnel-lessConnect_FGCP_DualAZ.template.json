@@ -1600,16 +1600,7 @@
 					}
 				],
 				"ServiceName": {
-					"Fn::Join": [
-						"",
-						[
-							"com.amazonaws.",
-							{
-								"Ref": "AWS::Region"
-							},
-							".ec2"
-						]
-					]
+					"Fn::Sub": "com.amazonaws.${AWS::Region}.ec2"
 				},
 				"Tags": [
 					{
