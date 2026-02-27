@@ -1,6 +1,6 @@
 {
 	"AWSTemplateFormatVersion": "2010-09-09",
-	"Description": "(v15.7) AWS CFT to deploy a dual AZ A-P solution integrated with Cloud WAN Tunnel-less Connect, repo: https://github.com/FortinetCloudCSE/fortigate-aws-cwanconnect-ha-dualaz-cloudformation",
+	"Description": "(v26.1.a) AWS CFT to deploy a dual AZ A-P solution integrated with Cloud WAN Tunnel-less Connect, repo: https://github.com/FortinetCloudCSE/fortigate-aws-cwanconnect-ha-dualaz-cloudformation",
 	"Metadata": {
 		"AWS::CloudFormation::Interface": {
 			"ParameterGroups": [
@@ -1159,7 +1159,15 @@
 			"Type": "AWS::NetworkManager::ConnectAttachment",
 			"Properties": {
 				"CoreNetworkId": {
-					"Ref": "CoreNetwork"
+					"Fn::If": [
+						"CreateCwan",
+						{
+							"Ref": "CoreNetwork"
+						},
+						{
+							"Ref": "CwanExisting"
+						}
+					]
 				},
 				"EdgeLocation": {
 					"Ref": "AWS::Region"
@@ -1279,10 +1287,7 @@
 			"Properties": {
 				"Handler": "index.handler",
 				"Role": {
-					"Fn::GetAtt": [
-						"LambdaRole",
-						"Arn"
-					]
+					"Fn::Sub": "${LambdaRole.Arn}"
 				},
 				"Code": {
 					"ZipFile": {
@@ -1335,10 +1340,7 @@
 			"Type": "Custom::DescribeNMConnectPeer",
 			"Properties": {
 				"ServiceToken": {
-					"Fn::GetAtt": [
-						"DescribeNMConnectPeer",
-						"Arn"
-					]
+					"Fn::Sub": "${DescribeNMConnectPeer.Arn}"
 				},
 				"ConnectPeerId": {
 					"Ref": "CloudWanConnectPeer1"
@@ -1349,10 +1351,7 @@
 			"Type": "Custom::DescribeNMConnectPeer",
 			"Properties": {
 				"ServiceToken": {
-					"Fn::GetAtt": [
-						"DescribeNMConnectPeer",
-						"Arn"
-					]
+					"Fn::Sub": "${DescribeNMConnectPeer.Arn}"
 				},
 				"ConnectPeerId": {
 					"Ref": "CloudWanConnectPeer2"
@@ -1386,22 +1385,6 @@
 						"Key": "Name",
 						"Value": {
 							"Fn::Sub": "${AWS::StackName}-PrivateRouteTable"
-						}
-					}
-				]
-			}
-		},
-		"AttachmentRouteTable": {
-			"Type": "AWS::EC2::RouteTable",
-			"Properties": {
-				"VpcId": {
-					"Ref": "VPC"
-				},
-				"Tags": [
-					{
-						"Key": "Name",
-						"Value": {
-							"Fn::Sub": "${AWS::StackName}-AttachmentRouteTable"
 						}
 					}
 				]
@@ -1455,19 +1438,6 @@
 							}
 						]
 					]
-				}
-			}
-		},
-		"Route3": {
-			"Type": "AWS::EC2::Route",
-			"DependsOn": "Fgt1Eni1",
-			"Properties": {
-				"RouteTableId": {
-					"Ref": "AttachmentRouteTable"
-				},
-				"DestinationCidrBlock": "0.0.0.0/0",
-				"NetworkInterfaceId": {
-					"Ref": "Fgt1Eni1"
 				}
 			}
 		},
@@ -1742,10 +1712,7 @@
 			],
 			"Properties": {
 				"ImageId": {
-					"Fn::GetAtt": [
-						"RunImageFunction",
-						"ami"
-					]
+					"Fn::Sub": "${RunImageFunction.ami}"
 				},
 				"InstanceType": {
 					"Ref": "InstanceType"
@@ -1827,10 +1794,7 @@
 										"MIME-Version: 1.0",
 										"",
 										{
-											"Fn::GetAtt": [
-												"RunInitFunction1",
-												"fgt_config"
-											]
+											"Fn::Sub": "${RunInitFunction1.fgt_config}"
 										},
 										"",
 										{
@@ -1875,10 +1839,7 @@
 			],
 			"Properties": {
 				"ImageId": {
-					"Fn::GetAtt": [
-						"RunImageFunction",
-						"ami"
-					]
+					"Fn::Sub": "${RunImageFunction.ami}"
 				},
 				"InstanceType": {
 					"Ref": "InstanceType"
@@ -1960,10 +1921,7 @@
 										"MIME-Version: 1.0",
 										"",
 										{
-											"Fn::GetAtt": [
-												"RunInitFunction2",
-												"fgt_config"
-											]
+											"Fn::Sub": "${RunInitFunction2.fgt_config}"
 										},
 										"",
 										{
@@ -2138,10 +2096,7 @@
 			"Type": "AWS::EC2::EIPAssociation",
 			"Properties": {
 				"AllocationId": {
-					"Fn::GetAtt": [
-						"ClusterEIP",
-						"AllocationId"
-					]
+					"Fn::Sub": "${ClusterEIP.AllocationId}"
 				},
 				"NetworkInterfaceId": {
 					"Ref": "Fgt1Eni0"
@@ -2315,10 +2270,7 @@
 			"Condition": "PublicEC2API",
 			"Properties": {
 				"AllocationId": {
-					"Fn::GetAtt": [
-						"Fgt1EIP",
-						"AllocationId"
-					]
+					"Fn::Sub": "${Fgt1EIP.AllocationId}"
 				},
 				"NetworkInterfaceId": {
 					"Ref": "Fgt1Eni2"
@@ -2348,10 +2300,7 @@
 			"Condition": "PublicEC2API",
 			"Properties": {
 				"AllocationId": {
-					"Fn::GetAtt": [
-						"Fgt2EIP",
-						"AllocationId"
-					]
+					"Fn::Sub": "${Fgt2EIP.AllocationId}"
 				},
 				"NetworkInterfaceId": {
 					"Ref": "Fgt2Eni2"
@@ -2483,10 +2432,7 @@
 					}
 				},
 				"Role": {
-					"Fn::GetAtt": [
-						"LambdaRole",
-						"Arn"
-					]
+					"Fn::Sub": "${LambdaRole.Arn}"
 				},
 				"Timeout": 120,
 				"Handler": "index.handler",
@@ -2498,10 +2444,7 @@
 			"Type": "Custom::ImageFunction",
 			"Properties": {
 				"ServiceToken": {
-					"Fn::GetAtt": [
-						"ImageFunction",
-						"Arn"
-					]
+					"Fn::Sub": "${ImageFunction.Arn}"
 				},
 				"SearchString": {
 					"Fn::If": [
@@ -2772,50 +2715,35 @@
 								"next",
 								"end",
 								"end",
-								{
-									"Fn::If": [
-										"PrivateEC2API",
-										{
-											"Ref": "AWS::NoValue"
-										},
-										{
-											"Fn::Join": [
-												"\n",
-												[
-													"config firewall policy",
-													"edit 1",
-													"set name egress",
-													"set srcintf port2",
-													"set dstintf port1",
-													"set srcaddr all",
-													"set dstaddr all",
-													"set action accept",
-													"set schedule always",
-													"set service ALL",
-													"set utm-status enable",
-													"set ssl-ssh-profile certificate-inspection",
-													"set ips-sensor default",
-													"set application-list default",
-													"set logtraffic all",
-													"set nat enable",
-													"next",
-													"edit 2",
-													"set name east-west",
-													"set srcintf port2",
-													"set dstintf port2",
-													"set srcaddr all",
-													"set dstaddr all",
-													"set action accept",
-													"set schedule always",
-													"set service ALL_ICMP",
-													"set logtraffic all",
-													"next",
-													"end"
-												]
-											]
-										}
-									]
-								},
+								"config firewall policy",
+								"edit 1",
+								"set name egress",
+								"set srcintf port2",
+								"set dstintf port1",
+								"set srcaddr all",
+								"set dstaddr all",
+								"set action accept",
+								"set schedule always",
+								"set service ALL",
+								"set utm-status enable",
+								"set ssl-ssh-profile certificate-inspection",
+								"set ips-sensor default",
+								"set application-list default",
+								"set logtraffic all",
+								"set nat enable",
+								"next",
+								"edit 2",
+								"set name east-west",
+								"set srcintf port2",
+								"set dstintf port2",
+								"set srcaddr all",
+								"set dstaddr all",
+								"set action accept",
+								"set schedule always",
+								"set service ALL_ICMP",
+								"set logtraffic all",
+								"next",
+								"end",
 								"config system sdn-connector",
 								"edit aws-instance-role",
 								"set status enable",
@@ -2912,10 +2840,7 @@
 					}
 				},
 				"Role": {
-					"Fn::GetAtt": [
-						"LambdaRole",
-						"Arn"
-					]
+					"Fn::Sub": "${LambdaRole.Arn}"
 				},
 				"Timeout": 120,
 				"Handler": "index.handler",
@@ -2927,10 +2852,7 @@
 			"Type": "Custom::InitFunction",
 			"Properties": {
 				"ServiceToken": {
-					"Fn::GetAtt": [
-						"InitFunction",
-						"Arn"
-					]
+					"Fn::Sub": "${InitFunction.Arn}"
 				},
 				"S3Bucket": {
 					"Ref": "InitS3Bucket"
@@ -3008,18 +2930,12 @@
 							"',",
 							"'ConnectPeerIP1':'",
 							{
-								"Fn::GetAtt": [
-									"RunDescribeNMConnectPeer1",
-									"ip1"
-								]
+								"Fn::Sub": "${RunDescribeNMConnectPeer1.ip1}"
 							},
 							"',",
 							"'ConnectPeerIP2':'",
 							{
-								"Fn::GetAtt": [
-									"RunDescribeNMConnectPeer1",
-									"ip2"
-								]
+								"Fn::Sub": "${RunDescribeNMConnectPeer1.ip2}"
 							},
 							"',",
 							"'HApeer':'",
@@ -3049,10 +2965,7 @@
 			"Type": "Custom::InitFunction",
 			"Properties": {
 				"ServiceToken": {
-					"Fn::GetAtt": [
-						"InitFunction",
-						"Arn"
-					]
+					"Fn::Sub": "${InitFunction.Arn}"
 				},
 				"S3Bucket": {
 					"Ref": "InitS3Bucket"
@@ -3130,18 +3043,12 @@
 							"',",
 							"'ConnectPeerIP1':'",
 							{
-								"Fn::GetAtt": [
-									"RunDescribeNMConnectPeer2",
-									"ip1"
-								]
+								"Fn::Sub": "${RunDescribeNMConnectPeer2.ip1}"
 							},
 							"',",
 							"'ConnectPeerIP2':'",
 							{
-								"Fn::GetAtt": [
-									"RunDescribeNMConnectPeer2",
-									"ip2"
-								]
+								"Fn::Sub": "${RunDescribeNMConnectPeer2.ip2}"
 							},
 							"',",
 							"'HApeer':'",
